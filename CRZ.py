@@ -80,7 +80,7 @@ def GA(crossover, mutation, select, unitCost, initCost, waitCost, detourCost,
     # else:
     #     jsonFile = os.path.join('benchmark', 'Solomon_json')
 
-    ty = 'Z2'
+    ty = 'C'
     # name = str(IND_SIZE) + 'req'
     aggregate_list = []
     for algNo in range(1, 9):
@@ -243,30 +243,6 @@ def GA(crossover, mutation, select, unitCost, initCost, waitCost, detourCost,
                             sum2 = sum(x*x for x in fits)
                             std = abs(sum2 / length - mean**2)**0.5
 
-                            # Debug, suppress print()
-
-                            # print('  Min fitness: %s' % min(fits))
-
-                            # print('  Max %s' % max(fits))
-                            # print('  Avg %s' % mean)
-                            # print('  Std %s' % std)
-
-                            # Write benchmark to holders for exporting results to CSV file
-                            # if exportCSV:
-                            #     csvRow = {
-                            #         'generation': g,
-                            #         # 'evaluated_individuals': len(invalidInd),
-                            #         # 'c'+str(cxPb)+'m'+str(mutPb): min(fits),
-                            #         # str(instName)+'p'+str(popSize)+'c'+str(cxPb)+'m'+str(mutPb): min(fits),
-                            #         'min_fitness': min(fits),
-                            #         'num_veh': len(),
-                            #         # 'max_fitness': max(fits),
-                            #         # 'avg_fitness': mean,
-                            #         # 'std_fitness': std,
-                            #         # 'avg_cost': 1 / mean,
-                            #     }
-                            #     csvData.append(csvRow)
-
                         print('-- End of evolution --')
 
                         computing_time = (timer() - start_time)/60
@@ -377,9 +353,9 @@ def GA(crossover, mutation, select, unitCost, initCost, waitCost, detourCost,
     # fig_path = os.path.join(BASE_DIR, 'results', 'test', name)
     fig_path = os.path.join(BASE_DIR, 'results', 'CRZ', ty)
     # fig.savefig(fig_path + '/' + name + '.png')
-    fig.savefig(fig_path + '/' + ty + '-3.png')
+    fig.savefig(fig_path + '/' + instName + '.png')
     # res_name = name + '.csv'
-    res_name = ty + '-3.csv'
+    res_name = instName + '.csv'
     pathout = os.path.join(fig_path, res_name)
     df_objs.to_csv(pathout) # , index=False
     return best_route
@@ -484,3 +460,6 @@ if __name__ == '__main__':
     # toolbox.register("map", futures.map)
     main()
     pool.close()
+    duration = 3  # second
+    freq = 440  # Hz
+    os.system('play --no-show-progress --null --channels 1 synth %s sine %f' % (duration, freq))
