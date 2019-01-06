@@ -108,7 +108,7 @@ def GA(crossover, mutation, select, unitCost, initCost, waitCost, detourCost,
                     # for popSize in [2000]: # 100, 500, 1000, 1500
                     # cxPb = 0.7
                     # mutPb = 0.3
-                    for popSize, NGen in zip([50], [50]): # 1500
+                    for popSize, NGen in zip([100], [100]): # 1500
                         # for no in range(10):
                         with open(filedir) as in_f:
                             instance = load(in_f)
@@ -290,7 +290,7 @@ def GA(crossover, mutation, select, unitCost, initCost, waitCost, detourCost,
                             # csvPathname = os.path.join(BASE_DIR, 'results', 'test', '10req', 'alg1', subname, csvFilename) #  '1',, 'gen', 'g200',
 
                             # csvPathname = os.path.join(BASE_DIR, 'results', 'test', name, algName, csvFilename)
-                            csvPathname = os.path.join(BASE_DIR, 'results', 'CRZ', '3', ty, algName, csvFilename)
+                            csvPathname = os.path.join(BASE_DIR, 'results', 'CRZ', '2', ty, algName, csvFilename)
                             # csvPathname = os.path.join(BASE_DIR, 'results', 'CRZ_split', ty, algName, csvFilename)
                             print('Write to file: %s' % csvPathname)
                             utils.makeDirsForFile(pathname=csvPathname)
@@ -351,11 +351,11 @@ def GA(crossover, mutation, select, unitCost, initCost, waitCost, detourCost,
     plot = df_objs.plot.line(colormap='rainbow', figsize=(10,10))
     fig = plot.get_figure()
     # fig_path = os.path.join(BASE_DIR, 'results', 'test', name)
-    fig_path = os.path.join(BASE_DIR, 'results', 'CRZ', '3', ty)
+    fig_path = os.path.join(BASE_DIR, 'results', 'CRZ', '2', ty)
     # fig.savefig(fig_path + '/' + name + '.png')
-    fig.savefig(fig_path + '/' + ty + '.png')
+    fig.savefig(fig_path + '/' + instName + '.png')
     # res_name = name + '.csv'
-    res_name = ty + '.csv'
+    res_name = instName + '.csv'
     pathout = os.path.join(fig_path, res_name)
     df_objs.to_csv(pathout) # , index=False
     return best_route
