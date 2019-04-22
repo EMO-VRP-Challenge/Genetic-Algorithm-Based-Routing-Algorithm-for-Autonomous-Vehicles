@@ -31,6 +31,7 @@ from numba import jit
 def profile(fnc):
 
     """A decorator that uses cProfile to profile a function"""
+
     def inner(*args, **kwargs):
         pr = cProfile.Profile()
         pr.enable()
@@ -46,8 +47,9 @@ def profile(fnc):
 
 
 # @jit(nopython=True)
-# @profile
+@profile
 def GA(filedir):
+
     """
     In this GA implementation, the individuals are valid throughout the GA process, they are made valid
     right after the population are generated and right after each crossover and mutation operation.
@@ -173,8 +175,8 @@ def GA(filedir):
         # while min(fits) > threshold:
             print('-- Generation %d --' % g)
             # print(f'Process {os.getpid()} working.')
-            proc_name = multiprocessing.current_process().name
-            print(f'Current process: {proc_name}.')
+            # proc_name = multiprocessing.current_process().name
+            # print(f'Current process: {proc_name}.')
             # g += 1
 
             # Select the next generation individuals
@@ -362,12 +364,12 @@ def GA(filedir):
         alg.append(numpy.mean(obj8))
         aggregate_list.append(alg)
     df_objs = pd.DataFrame(aggregate_list).T
-    df_objs.replace(0.0, 1.0, inplace=True)
+    df_objs.replace(0.0, 500.0, inplace=True)
     df_objs.index = ['obj1', 'obj2', 'obj3', 'obj4', 'obj5', 'obj6', 'obj7', 'obj8']
     # df_objs.columns = ['obj1', 'obj7']
     df_objs.columns = ['alg1', 'alg2', 'alg3', 'alg4', 'alg5', 'alg6', 'alg7', 'alg8']
     # df_objs.index = ['alg2']
-    plot = df_objs.plot.line(colormap='rainbow', figsize=(10,10), logy=True, linewidth=0.5)
+    plot = df_objs.plot.line(colormap='rainbow', figsize=(10,10), linewidth=1) # logy=True,
     plot.set(xlabel='objective', ylabel='fitness')
     fig = plot.get_figure()
     # fig_path = os.path.join(BASE_DIR, 'results', 'CRZ', ty)
@@ -381,24 +383,20 @@ def GA(filedir):
     return best_route
 
 
-
-
-IND_SIZE = 200
-# Create Fitness and Individual Classes
-creator.create('FitnessMin', base.Fitness, weights=(-1.0,))
-creator.create('Individual', list, fitness=creator.FitnessMin)
-toolbox = base.Toolbox()
-# Attribute generator
-toolbox.register('indexes', random.sample, range(0, IND_SIZE), IND_SIZE)
-# Structure initializers
-toolbox.register('individual', tools.initIterate, creator.Individual, toolbox.indexes)
-toolbox.register('population', tools.initRepeat, list, toolbox.individual)
-
-
 if __name__ == '__main__':
-    multiprocessing.set_start_method('spawn')
-    pool = multiprocessing.Pool()
     start_time_0 = timer()
+    # multiprocessing.set_start_method('spawn')
+    # pool = multiprocessing.Pool()
+    IND_SIZE = 200
+    # Create Fitness and Individual Classes
+    creator.create('FitnessMin', base.Fitness, weights=(-1.0,))
+    creator.create('Individual', list, fitness=creator.FitnessMin)
+    toolbox = base.Toolbox()
+    # Attribute generator
+    toolbox.register('indexes', random.sample, range(0, IND_SIZE), IND_SIZE)
+    # Structure initializers
+    toolbox.register('individual', tools.initIterate, creator.Individual, toolbox.indexes)
+    toolbox.register('population', tools.initRepeat, list, toolbox.individual)
     # toolbox.register('map', pool.map)
     # toolbox.register("map", futures.map)
     # main()
@@ -408,14 +406,12 @@ if __name__ == '__main__':
     # p = multiprocessing.Process(target=GA, args=(crossover, mutation, select, unitCost, initCost, waitCost, detourCost, popSize, NGen,))
     folder = os.path.join(BASE_DIR, 'benchmark')
     sfolder = os.path.join(folder, 'CRZ_json')
-    # for filedir in glob.iglob(os.path.join(sfolder, '*.json')):
-    #     GA(filedir)
-    filedir = [fdir for fdir in glob.iglob(os.path.join(sfolder, '*.json'))]
-    pool.map(GA, filedir)
+    for filedir in glob.iglob(os.path.join(sfolder, '*.json')):
+        GA(filedir)
     total_computing_time = round((timer() - start_time_0)/60, 2)
     print(f'TOTAL_TIME: {total_computing_time} min.')
     # p.start()
     # p.join()
     os.system('afplay /System/Library/Sounds/Glass.aiff')
-    pool.close()
+    # pool.close()
 
