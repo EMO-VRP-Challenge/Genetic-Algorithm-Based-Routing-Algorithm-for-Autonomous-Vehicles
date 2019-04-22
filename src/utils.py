@@ -48,6 +48,7 @@ def exist(pathname, overwrite=False, displayInfo=True):
         else:
             if displayInfo:
                 print(('%s: %s exists.' % (__pathType(pathname), pathname)))
+
             return True
     else:
         if displayInfo:
@@ -72,10 +73,10 @@ def text_to_json(customize='0'):
     else:
         # textDataDir = os.path.join(BASE_DIR, 'benchmark', 'CRZ_split', 'Cluster') # , 'Cluster'
         # textDataDir = os.path.join(BASE_DIR, 'benchmark', 'CRZ_split', 'Random')
-        textDataDir = os.path.join(BASE_DIR, 'benchmark', 'CRZ_split', 'Zones')
+        textDataDir = os.path.join(BASE_DIR, 'benchmark', 'CRZ')
         # jsonDataDir = os.path.join(BASE_DIR, 'benchmark', 'CRZ_split_json', 'C')
         # jsonDataDir = os.path.join(BASE_DIR, 'benchmark', 'CRZ_split_json', 'R')
-        jsonDataDir = os.path.join(BASE_DIR, 'benchmark', 'CRZ_split_json', 'Z')
+        jsonDataDir = os.path.join(BASE_DIR, 'benchmark', 'CRZ_json')
         os.makedirs(jsonDataDir, exist_ok=True)
 
 
@@ -205,7 +206,7 @@ def result_analyze():
 
 # def visualization(threshold, no, instanceName, instance, route, crossover, mutation, select, waitCost,
 #                   detourCost, indSize, popSize=None, cxPb=None, mutPb=None, NGen=None):
-def visualization(foldername, threshold, algName, instanceName, instance, route, crossover, mutation, select, waitCost,
+def visualization(nfolder, ty, algName, instanceName, instance, route, crossover, mutation, select, waitCost,
                   detourCost, indSize, popSize=None, cxPb=None, mutPb=None, NGen=None):
     # Takes in the instance and a route list and plots the routes.
 
@@ -227,15 +228,18 @@ def visualization(foldername, threshold, algName, instanceName, instance, route,
             # row.append([i, int(instance.get("i")["x"]), int(instance.get("i")["y"])])
             row.append([int(customer), int(instance[customer]["x"]), int(instance[customer]["y"])])
         except:
-            print(i)
+            pass
+            # print(i)
         i += 1
     df = pd.DataFrame(row)
-
+    # df = df[:200]
     df.columns = ['customer_number', 'x_pos', 'y_pos']
     df.set_index('customer_number', inplace=True)
     plt.style.use('ggplot')
     # plotDataDir = os.path.join(BASE_DIR, 'plot', 'TEST', foldername, algName)
-    plotDataDir = os.path.join(BASE_DIR, 'plot', 'CRZ', foldername, algName)
+    # plotDataDir = os.path.join(BASE_DIR, 'plot', '1000req', nfolder, foldername, algName)
+    plotDataDir = os.path.join(BASE_DIR, 'plot', '100req', ty)
+    # plotDataDir = os.path.join(BASE_DIR, 'plot', 'CRZ_1dmd', foldername, algName)
     # plotDataDir = os.path.join(BASE_DIR, 'plot', 'CRZ_split', foldername, algName)
 
     # try:
@@ -254,7 +258,7 @@ def visualization(foldername, threshold, algName, instanceName, instance, route,
     # define different colors for different routes
     # colors = cycle(["b", "r",  "g", "purple", "orange", "grey", "black", "pink", "y", "brown"])
     # colors = iter(plt.cm.rainbow(np.linspace(0,1,1000)))
-    colors = iter(pl.cm.jet(np.linspace(0,1,1000)))
+    colors = iter(pl.cm.jet(np.linspace(0,1,len(route)))) # 1000
     # Plot the connections of routes:
 
     # colors = cm.rainbow(np.linspace(0, 1, len(route)))
@@ -296,11 +300,18 @@ def visualization(foldername, threshold, algName, instanceName, instance, route,
     try:
         # parameters = '_cx%s_mut%s_sel%s_wC%s_dC%s_iS%s_pS%s_cP%s_mP%s_f%s_%s' % (crossover, mutation, select, waitCost,
         #                                                                          detourCost, indSize, popSize, cxPb, mutPb, threshold, no)
-        parameters = '_cro%s_mut%s_sel%s_wC%s_dC%s_iS%s_pS%s_cP%s_mP%s_nG%s' % (crossover, mutation, select, waitCost,
-                                                                                      detourCost, indSize, popSize, cxPb, mutPb, NGen)
+        # parameters = '_cro%s_mut%s_sel%s_wC%s_dC%s_iS%s_pS%s_cP%s_mP%s_nG%s' % (crossover, mutation, select, waitCost,
+        #                                                                               detourCost, indSize, popSize, cxPb, mutPb, NGen)
+        parameters = '_%s_indS%s_popS%s_nG%s' % (algName, indSize, popSize, NGen)
     except:
         parameters = currentTime
-    file_location = os.path.join(plotDataDir, instanceName)
+    file_name = parameters + '.png'
+    file_location = os.path.join(plotDataDir, instanceName+file_name)
     makeDirsForFile(pathname=file_location)
-    plt.savefig(file_location + parameters + '.png')
+    if exist(pathname=file_location, overwrite=False):
+        parameters = '_%s_indS%s_popS%s_nG%s_1' % (algName, indSize, popSize, NGen)
+        file_name = parameters + '.png'
+        file_location = os.path.join(plotDataDir, instanceName+file_name)
+    plt.savefig(file_location)
+    plt.close('all')
 

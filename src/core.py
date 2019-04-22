@@ -37,19 +37,18 @@ def route_generation(individual, instance):
     # Initialize a sub-route
     subRoute = []
     vehicleLoad = 0
-    for customerID in individual[:]:
+    for customerID in individual[:]: # [[40, 41, 26, 27], [64, 50, 65, 51], [60, 61, 66, 67], [54, 55, 2, 3, 46, 47], [10, 11, 52, 53]]
         # demand = instance['customer_%d' % customerID]['demand']
         demand = int(instance['%d' % customerID]['demand'])
-
         if customerID % 2 == 1:
             demand = 0
         updatedVehicleLoad = vehicleLoad + demand
-
         if (updatedVehicleLoad <= vehicleCapacity):
             if customerID % 2 == 1:
                 if (customerID-1) in subRoute:
                     # Add to current sub-route
                     subRoute.append(customerID)
+                    updatedVehicleLoad -= demand
                 else:
                     individual.append(customerID)
             else:
@@ -301,205 +300,6 @@ def eval_GA_6(individual, instance, unitCost=1.0, initCost=0, waitCost=1, detour
     return fitness,
 
 
-# def eval_GA_1(individual, instance, unitCost=1.0, initCost=0, waitCost=1, detourCost=1):
-#     route = individual
-#     if not isinstance(individual[0], list):
-#         route = route_generation(individual, instance)
-#     # detour = 0
-#     fitness = 0
-#     ideal_distance = 0
-#
-#     for subRoute in route:
-#         subRoute_distance = 0
-#         wait = 0
-#         for i, customerID in enumerate(subRoute, 0):
-#             try:
-#                 next_customerID = subRoute[i+1]
-#             except:
-#                 pass
-#             else:
-#                 # Calculate section distance
-#                 distance = instance['distance_matrix'][customerID][next_customerID]
-#                 # Update sub-route distance
-#                 subRoute_distance += distance
-#                 if customerID % 2 == 0:
-#                     ideal_distance += instance['distance_matrix'][customerID][customerID + 1]
-#                     try:
-#                         subRoute_generator = (psg for psg in subRoute[i+1:] if psg % 2 == 0)
-#                         wait += instance['distance_matrix'][customerID][next(subRoute_generator)]
-#                     except:
-#                         pass
-#         detour = subRoute_distance - ideal_distance
-#         total_cost = wait * waitCost + detour * detourCost
-#         fitness += total_cost #** 2
-#     return fitness,
-
-
-# ## max(w + dr)
-# def eval_GA_2(individual, instance, unitCost=1.0, initCost=0, waitCost=1, detourCost=1):
-#     route = individual
-#     if not isinstance(individual[0], list):
-#         route = route_generation(individual, instance)
-#     max_cost = 0
-#     ideal_distance = 0
-#
-#     for subRoute in route:
-#         subRoute_distance = 0
-#         wait = 0
-#         for i, customerID in enumerate(subRoute, 0):
-#             try:
-#                 next_customerID = subRoute[i+1]
-#             except:
-#                 pass
-#             else:
-#                 # Calculate section distance
-#                 distance = instance['distance_matrix'][customerID][next_customerID]
-#                 # Update sub-route distance
-#                 subRoute_distance += distance
-#                 if customerID % 2 == 0:
-#                     ideal_distance += instance['distance_matrix'][customerID][customerID + 1]
-#                     try:
-#                         subRoute_generator = (psg for psg in subRoute[i+1:] if psg % 2 == 0)
-#                         wait += instance['distance_matrix'][customerID][next(subRoute_generator)]
-#                     except:
-#                         pass
-#         detour = subRoute_distance - ideal_distance
-#         total_cost = wait * waitCost + detour * detourCost
-#         if total_cost > max_cost:
-#             max_cost = total_cost
-#     fitness =  max_cost #** 2
-#     return fitness,
-
-
-# ## sum(w)
-# def eval_GA_3(individual, instance, unitCost=1.0, initCost=0, waitCost=1, detourCost=1):
-#     route = individual
-#     if not isinstance(individual[0], list):
-#         route = route_generation(individual, instance)
-#     total_cost = 0
-#     # ideal_distance = 0
-#
-#     for subRoute in route:
-#         subRoute_distance = 0
-#         wait = 0
-#         for i, customerID in enumerate(subRoute, 0):
-#             # try:
-#             #     next_customerID = subRoute[i+1]
-#             # except:
-#             #     pass
-#             # else:
-#                 # Calculate section distance
-#                 # distance = instance['distance_matrix'][customerID][next_customerID]
-#                 # Update sub-route distance
-#                 # subRoute_distance += distance
-#             if customerID % 2 == 0:
-#                 try:
-#                     subRoute_generator = (psg for psg in subRoute[i+1:] if psg % 2 == 0)
-#                     wait += instance['distance_matrix'][customerID][next(subRoute_generator)]
-#                 except:
-#                     pass
-#                     # ideal_distance += instance['distance_matrix'][customerID][customerID + 1]
-#
-#         # detour = subRoute_distance - ideal_distance
-#         total_cost += wait * waitCost
-#     fitness =  total_cost #** 2
-#     return fitness,
-
-
-# # max(w)
-# def eval_GA_4(individual, instance, unitCost=1.0, initCost=0, waitCost=1, detourCost=1):
-#     route = individual
-#     if not isinstance(individual[0], list):
-#         route = route_generation(individual, instance)
-#     max_cost = 0
-#     # ideal_distance = 0
-#
-#     for subRoute in route:
-#         subRoute_distance = 0
-#         wait = 0
-#         for i, customerID in enumerate(subRoute, 0):
-#             if customerID % 2 == 0:
-#                 try:
-#                     subRoute_generator = (psg for psg in subRoute[i+1:] if psg % 2 == 0)
-#                     wait += instance['distance_matrix'][customerID][next(subRoute_generator)]
-#                 except:
-#                     pass
-#                     # ideal_distance += instance['distance_matrix'][customerID][customerID + 1]
-#
-#         # detour = subRoute_distance - ideal_distance
-#         total_cost = wait * waitCost
-#         if total_cost > max_cost:
-#             max_cost = total_cost
-#     fitness =  max_cost #** 2
-#     return fitness,
-
-
-# ## sum(dr)
-# def eval_GA_5(individual, instance, unitCost=1.0, initCost=0, waitCost=1, detourCost=1):
-#     route = individual
-#     if not isinstance(individual[0], list):
-#         route = route_generation(individual, instance)
-#     total_cost = 0
-#
-#     for subRoute in route:
-#         subRoute_distance = 0
-#         ideal_distance = 0
-#         # wait = 0
-#         for i, customerID in enumerate(subRoute, 0):
-#             try:
-#                 next_customerID = subRoute[i+1]
-#             except:
-#                 pass
-#             else:
-#                 # Calculate section distance
-#                 distance = instance['distance_matrix'][customerID][next_customerID]
-#                 # Update sub-route distance
-#                 subRoute_distance += distance
-#                 if customerID % 2 == 0:
-#                     ideal_distance += instance['distance_matrix'][customerID][customerID + 1]
-#         detour = subRoute_distance - ideal_distance
-#         total_cost += detour * detourCost
-#     fitness =  total_cost #** 2
-#     return fitness,
-
-
-# # max(dr)
-# def eval_GA_6(individual, instance, unitCost=1.0, initCost=0, waitCost=1, detourCost=1):
-#     route = individual
-#     if not isinstance(individual[0], list):
-#         route = route_generation(individual, instance)
-#     max_cost = 0
-#
-#     for subRoute in route:
-#         subRoute_distance = 0
-#         ideal_distance = 0
-#         # wait = 0
-#         for i, customerID in enumerate(subRoute, 0):
-#             try:
-#                 next_customerID = subRoute[i+1]
-#             except:
-#                 pass
-#             else:
-#                 # Calculate section distance
-#                 distance = instance['distance_matrix'][customerID][next_customerID]
-#                 # Update sub-route distance
-#                 subRoute_distance += distance
-#                 if customerID % 2 == 0:
-#                     ideal_distance += instance['distance_matrix'][customerID][customerID + 1]
-#                     # try:
-#                     #     subRoute_generator = (psg for psg in subRoute[i+1:] if psg % 2 == 0)
-#                     #     wait += instance['distance_matrix'][customerID][next(subRoute_generator)]
-#                     # except:
-#                     #     pass
-#
-#         detour = subRoute_distance - ideal_distance
-#         total_cost = detour * detourCost
-#         if total_cost > max_cost:
-#             max_cost = total_cost
-#     fitness =  max_cost #** 2
-#     return fitness,
-
-
 # sum(dt)
 def eval_GA_7(individual, instance, unitCost=1.0, initCost=0, waitCost=1, detourCost=1):
     route = individual
@@ -576,6 +376,7 @@ def avg_dist(individual, instance):
         total_cost += subRoute_distance
     fitness =  total_cost/len(route)
     return fitness
+
 
 
 def eval_GA_1_dynamic(available_veh, min_req_id, individual, instance, new_req):
@@ -664,6 +465,7 @@ def cxOrdered(ind1, ind2):
 
     size = min(len(ind1), len(ind2))
     a, b = random.sample(range(size), 2)
+    # a, b = numpy.random.choice(size, 2).tolist()
     if a > b:
         a, b = b, a
 
@@ -714,10 +516,10 @@ def mutShuffleIndexes(individual):
     This function uses the :func:`~random.random` and :func:`~random.randint`
     functions from the python base :mod:`random` module.
     """
-
     size = len(individual)
     for i in range(size):
         swap_indx = random.randint(0, size - 2)
+        # swap_indx = numpy.random.random_integers(0, size-2).item()
         if swap_indx >= i:
             swap_indx += 1
         individual[i], individual[swap_indx] = \
