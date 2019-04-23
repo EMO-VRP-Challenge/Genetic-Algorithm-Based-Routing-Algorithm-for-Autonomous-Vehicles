@@ -689,6 +689,7 @@ def gen_rand(no):
         demand = []
         for _ in range(200): # 200
             demand.append(random.randint(1, 4))
+
         df['demand'] = demand
         # name = f'100req-C{ite}'
         name = f'100req-R{ite}'
@@ -698,6 +699,87 @@ def gen_rand(no):
         fig = df.plot.scatter(x='x', y='y', s=1).get_figure()
         # fig.savefig(sfolder + '/Li_32.png')
         fig.savefig(sfolder + '/' + name + '.png')
+
+
+def gen_demand_specified_rand(no):
+    for ite in range(no):
+        points = []
+        for i in range(200):
+            x = random.randint(1, 999)
+            y = random.randint(1, 999)
+            newCoords = [x, y]
+            points.append(newCoords)
+        df = pd.DataFrame(points)
+        df.columns = ['x', 'y']
+        demand = []
+        for _ in range(25): # 200
+            demand.append(random.randint(2, 4))
+        demand.extend([1]*75)
+        random.shuffle(demand)
+        ind = 1
+        while ind <= len(demand):
+            demand.insert(ind, 0)
+            ind += 2
+        df['demand'] = demand
+        # name = f'100req-C{ite}'
+        name = f'100req-dmd1-R{ite}'
+        path_out = os.path.join(folder, name + '.csv')
+        # df.columns = ['ID','x', 'y', 'demand']
+        df.to_csv(path_out, index=True)
+        fig = df.plot.scatter(x='x', y='y', s=1).get_figure()
+        # fig.savefig(sfolder + '/Li_32.png')
+        fig.savefig(sfolder + '/' + name + '.png')
+
+
+
+def gen_demand_specified_clusters():
+    # for ite in range(no):
+    centers = []
+    x = random.uniform(200, 300)
+    y = random.uniform(700, 800)
+    centers.append([x, y])
+    x = random.uniform(200, 300)
+    y = random.uniform(200, 300)
+    centers.append([x, y])
+    x = random.uniform(700, 800)
+    y = random.uniform(700, 800)
+    centers.append([x, y])
+    x = random.uniform(700, 800)
+    y = random.uniform(200, 300)
+    centers.append([x, y])
+    points = []
+    for i in range(4):
+        point_limit = 50 # 50
+        while point_limit > 0:
+            deviationFromPoint = random.uniform(100, 200)
+            alpha = 2 * math.pi * random.random()
+            r = deviationFromPoint * np.sqrt(random.random())
+            x = int(r * math.cos(alpha) + centers[i][0])
+            y = int(r * math.sin(alpha) + centers[i][1])
+            if 0 < x < 1000 and 0 < y < 1000:
+                point_limit -= 1
+                newCoords = [x, y]
+                points.append(newCoords)
+    df = pd.DataFrame(points)
+    df.columns = ['x', 'y']
+    demand = []
+    for _ in range(25): # 200
+        demand.append(random.randint(2, 4))
+    demand.extend([1]*75)
+    random.shuffle(demand)
+    ind = 1
+    while ind <= len(demand):
+        demand.insert(ind, 0)
+        ind += 2
+    df['demand'] = demand
+    # name = f'100req-C{ite}'
+    name = '100req-dmd1-C1'
+    path_out = os.path.join(folder, name + '.csv')
+    # df.columns = ['ID','x', 'y', 'demand']
+    df.to_csv(path_out, index=True)
+    fig = df.plot.scatter(x='x', y='y', s=1).get_figure()
+    # fig.savefig(sfolder + '/Li_32.png')
+    fig.savefig(folder + '/' + name + '.png')
 
 
 # format_instance_0()
@@ -713,10 +795,12 @@ def gen_rand(no):
 # change_demands_in_R_set()
 # split_demands()
 # dropoff_demand_change_csv()
-gen_4_clusters()
+# gen_4_clusters()
 # line_connect_pickup_dropoff()
 # plot_from_csv()
-gen_rand(4)
+# gen_rand(4)
+# gen_demand_specified_clusters()
+gen_demand_specified_rand(4)
 rename_first_col_name()
 # zones2()
 # csv_split_demands()
