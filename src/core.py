@@ -7,8 +7,10 @@ import numpy
 from json import load
 import csv
 from deap import base, creator, tools
+from CRZ_profile import profile
 from .utils import makeDirsForFile, exist
 from . import BASE_DIR
+from numba import jit
 from itertools import takewhile
 # BASE_DIR = os.path.abspath(os.path.dirname(os.path.dirname(__file__)))
 
@@ -30,6 +32,7 @@ def print_route(route, merge=False):
     return
 
 
+# @jit(nopython=True)
 def route_generation(individual, instance):
     route = []
     # vehicleCapacity = instance['vehicle_capacity']
@@ -88,6 +91,7 @@ def route_generation(individual, instance):
 
 
 ## sum(w + dr)
+# @profile
 def eval_GA_1(individual, instance, unitCost=1.0, initCost=0, waitCost=1, detourCost=1):
     route = individual
     if not isinstance(individual[0], list):

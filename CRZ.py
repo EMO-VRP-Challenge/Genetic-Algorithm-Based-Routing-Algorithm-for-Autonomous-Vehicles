@@ -17,6 +17,7 @@ from itertools import chain
 import functools
 import pandas as pd
 import cProfile, pstats, io
+
 from numba import jit
 # from scoop import futures
 
@@ -70,7 +71,7 @@ def GA(filedir):
     popSize = 100
     NGen = 100
     exportCSV = True
-    ty = 'C'
+    # ty = 'dA'
     nfolder = '15'
     aggregate_list = []
     for algNo in range(1, 9):
@@ -273,7 +274,8 @@ def GA(filedir):
         avg_sharing = numpy.mean(current_psg)
 
         avg_cross = -1
-        if ty == 'C':
+        # if ty == 'C':
+        if 'C' in instName:
             crossing = []
             for veh in best_route:
                 cross = 0
@@ -315,11 +317,11 @@ def GA(filedir):
             # csvPathname = os.path.join(BASE_DIR, 'results', 'CRZ', nfolder, ty, algName, csvFilename)
             csvPathname = os.path.join(BASE_DIR, 'results', '100req', ty, csvFilename)
             utils.makeDirsForFile(pathname=csvPathname)
-            if utils.exist(pathname=csvPathname, overwrite=False):
-                # csvFilename = '%s_alg%s_cro%s_mut%s_sel%s_wC%s_dC%s_iS%s_pS%s_cP%s_mP%s_nG%s.csv' % (instName, algNo, crossover, mutation, select, waitCost,
-                #                                                                              detourCost, IND_SIZE, popSize, cxPb, mutPb, NGen)
-                csvFilename = '%s_alg%s_indS%s_popS%s_nG%s_1.csv' % (instName, algNo, IND_SIZE, popSize, NGen)
-                csvPathname = os.path.join(BASE_DIR, 'results', '100req', ty, csvFilename)
+            # if utils.exist(pathname=csvPathname, overwrite=False):
+            #     # csvFilename = '%s_alg%s_cro%s_mut%s_sel%s_wC%s_dC%s_iS%s_pS%s_cP%s_mP%s_nG%s.csv' % (instName, algNo, crossover, mutation, select, waitCost,
+            #     #                                                                              detourCost, IND_SIZE, popSize, cxPb, mutPb, NGen)
+            #     csvFilename = '%s_alg%s_indS%s_popS%s_nG%s_1.csv' % (instName, algNo, IND_SIZE, popSize, NGen)
+            #     csvPathname = os.path.join(BASE_DIR, 'results', '100req', ty, csvFilename)
             with open(csvPathname, 'w') as f:
                     # fieldnames = ['min_fitness', 'num_veh', 'avg_req', 'avg_dist', 'computing_time(s)']
                     fieldnames = ['avg_cross', 'num_veh', 'avg_req', 'avg_sharing', 'avg_dist', 'computing_time(s)', 'route', 'min_fitness']
@@ -330,57 +332,55 @@ def GA(filedir):
             print('Write to file: %s' % csvPathname)
                     # writer = csv.writer(f)
                     # writer.writerow(row)
-        # best_route = core.route_generation(bestInd, instance)
-        obj1.append(core.eval_GA_1(best_route, instance=instance, unitCost=unitCost, initCost=initCost,
-                                  waitCost=waitCost, detourCost=detourCost)[0])
-        obj2.append(core.eval_GA_2(best_route, instance=instance, unitCost=unitCost, initCost=initCost,
-                                  waitCost=waitCost, detourCost=detourCost)[0])
-        obj3.append(core.eval_GA_3(best_route, instance=instance, unitCost=unitCost, initCost=initCost,
-                                  waitCost=waitCost, detourCost=detourCost)[0])
-        obj4.append(core.eval_GA_4(best_route, instance=instance, unitCost=unitCost, initCost=initCost,
-                                  waitCost=waitCost, detourCost=detourCost)[0])
-        obj5.append(core.eval_GA_5(best_route, instance=instance, unitCost=unitCost, initCost=initCost,
-                                  waitCost=waitCost, detourCost=detourCost)[0])
-        obj6.append(core.eval_GA_6(best_route, instance=instance, unitCost=unitCost, initCost=initCost,
-                                  waitCost=waitCost, detourCost=detourCost)[0])
-        obj7.append(core.eval_GA_7(best_route, instance=instance, unitCost=unitCost, initCost=initCost,
-                                  waitCost=waitCost, detourCost=detourCost)[0])
-        obj8.append(core.eval_GA_8(best_route, instance=instance, unitCost=unitCost, initCost=initCost,
-                                  waitCost=waitCost, detourCost=detourCost)[0])
-        # aggregate_list.append(obj)
         utils.visualization(nfolder, ty, algName, instName, instance, best_route, crossover, mutation, select, waitCost,
                             detourCost, IND_SIZE, popSize, cxPb, mutPb, NGen)
-        # print('Computing Time: %s min' % computing_time)
+    #     # print('Computing Time: %s min' % computing_time)
         print('Computing Time: %s s' % computing_time)
-        alg.append(numpy.mean(obj1))
-        alg.append(numpy.mean(obj2))
-        alg.append(numpy.mean(obj3))
-        alg.append(numpy.mean(obj4))
-        alg.append(numpy.mean(obj5))
-        alg.append(numpy.mean(obj6))
-        alg.append(numpy.mean(obj7))
-        alg.append(numpy.mean(obj8))
-        aggregate_list.append(alg)
-    df_objs = pd.DataFrame(aggregate_list).T
-    df_objs.replace(0.0, 1.0, inplace=True)
-    df_objs.index = ['obj1', 'obj2', 'obj3', 'obj4', 'obj5', 'obj6', 'obj7', 'obj8']
-    # df_objs.columns = ['obj1', 'obj7']
-    df_objs.columns = ['alg1', 'alg2', 'alg3', 'alg4', 'alg5', 'alg6', 'alg7', 'alg8']
-    # df_objs.index = ['alg2']
-    plot = df_objs.plot.line(colormap='rainbow', figsize=(10,10), logy=True, linewidth=0.5)
-    plot.set(xlabel='objective', ylabel='fitness')
-    fig = plot.get_figure()
-    # fig_path = os.path.join(BASE_DIR, 'results', 'CRZ', ty)
-    fig_path = os.path.join(BASE_DIR, 'results', '100req')
-    fig.savefig(fig_path + '/' + ty + '.png')
-    # fig.savefig(fig_path + '/'  + 'C.png')
-    res_name = ty + '.csv'
-    # res_name = 'C.csv'
-    pathout = os.path.join(fig_path, res_name)
-    df_objs.to_csv(pathout) # , index=False
+        # best_route = core.route_generation(bestInd, instance)
+    #     obj1.append(core.eval_GA_1(best_route, instance=instance, unitCost=unitCost, initCost=initCost,
+    #                               waitCost=waitCost, detourCost=detourCost)[0])
+    #     obj2.append(core.eval_GA_2(best_route, instance=instance, unitCost=unitCost, initCost=initCost,
+    #                               waitCost=waitCost, detourCost=detourCost)[0])
+    #     obj3.append(core.eval_GA_3(best_route, instance=instance, unitCost=unitCost, initCost=initCost,
+    #                               waitCost=waitCost, detourCost=detourCost)[0])
+    #     obj4.append(core.eval_GA_4(best_route, instance=instance, unitCost=unitCost, initCost=initCost,
+    #                               waitCost=waitCost, detourCost=detourCost)[0])
+    #     obj5.append(core.eval_GA_5(best_route, instance=instance, unitCost=unitCost, initCost=initCost,
+    #                               waitCost=waitCost, detourCost=detourCost)[0])
+    #     obj6.append(core.eval_GA_6(best_route, instance=instance, unitCost=unitCost, initCost=initCost,
+    #                               waitCost=waitCost, detourCost=detourCost)[0])
+    #     obj7.append(core.eval_GA_7(best_route, instance=instance, unitCost=unitCost, initCost=initCost,
+    #                               waitCost=waitCost, detourCost=detourCost)[0])
+    #     obj8.append(core.eval_GA_8(best_route, instance=instance, unitCost=unitCost, initCost=initCost,
+    #                               waitCost=waitCost, detourCost=detourCost)[0])
+    #     # aggregate_list.append(obj)
+    #     alg.append(numpy.mean(obj1))
+    #     alg.append(numpy.mean(obj2))
+    #     alg.append(numpy.mean(obj3))
+    #     alg.append(numpy.mean(obj4))
+    #     alg.append(numpy.mean(obj5))
+    #     alg.append(numpy.mean(obj6))
+    #     alg.append(numpy.mean(obj7))
+    #     alg.append(numpy.mean(obj8))
+    #     aggregate_list.append(alg)
+    # df_objs = pd.DataFrame(aggregate_list).T
+    # df_objs.replace(0.0, 500.0, inplace=True)
+    # df_objs.index = ['obj1', 'obj2', 'obj3', 'obj4', 'obj5', 'obj6', 'obj7', 'obj8']
+    # # df_objs.columns = ['obj1', 'obj7']
+    # df_objs.columns = ['alg1', 'alg2', 'alg3', 'alg4', 'alg5', 'alg6', 'alg7', 'alg8']
+    # # df_objs.index = ['alg2']
+    # plot = df_objs.plot.line(colormap='rainbow', figsize=(10,10),linewidth=1) #  logy=True,
+    # plot.set(xlabel='objective', ylabel='fitness')
+    # fig = plot.get_figure()
+    # # fig_path = os.path.join(BASE_DIR, 'results', 'CRZ', ty)
+    # fig_path = os.path.join(BASE_DIR, 'results', '100req')
+    # fig.savefig(fig_path + '/' + ty + '.png')
+    # # fig.savefig(fig_path + '/'  + 'C.png')
+    # res_name = ty + '.csv'
+    # # res_name = 'C.csv'
+    # pathout = os.path.join(fig_path, res_name)
+    # df_objs.to_csv(pathout) # , index=False
     return best_route
-
-
 
 
 IND_SIZE = 200
@@ -393,11 +393,27 @@ toolbox.register('indexes', random.sample, range(0, IND_SIZE), IND_SIZE)
 # Structure initializers
 toolbox.register('individual', tools.initIterate, creator.Individual, toolbox.indexes)
 toolbox.register('population', tools.initRepeat, list, toolbox.individual)
+d = -1 # 3
+ty = 'd' + str(d)
 
 
 if __name__ == '__main__':
+    # d = 3
     multiprocessing.set_start_method('spawn')
     pool = multiprocessing.Pool()
+    from process_instance_file import gen_demand_specified_zones, rename_first_col_name, zones2, gen_demand_specified_clusters, gen_demand_specified_rand
+
+    # num_inst = 50
+    # gen_demand_specified_zones(num_inst, d)
+    # rename_first_col_name()
+    # zones2()
+    # gen_demand_specified_clusters(num_inst, d)
+    # gen_demand_specified_rand(num_inst, d)
+    # rename_first_col_name()
+    # folder = os.path.join('benchmark', 'CRZ', ty)
+    # csv_dir = [cdir for cdir in glob.iglob(os.path.join(folder, '*.csv'))]
+    # pool.map(utils.text_to_json, csv_dir)
+
     start_time_0 = timer()
     # toolbox.register('map', pool.map)
     # toolbox.register("map", futures.map)
@@ -406,8 +422,8 @@ if __name__ == '__main__':
     # pool.map(GA, args=(crossover, mutation, select, unitCost, initCost, waitCost, detourCost, popSize, NGen,))
     # GA()
     # p = multiprocessing.Process(target=GA, args=(crossover, mutation, select, unitCost, initCost, waitCost, detourCost, popSize, NGen,))
-    folder = os.path.join(BASE_DIR, 'benchmark')
-    sfolder = os.path.join(folder, 'CRZ_json')
+
+    sfolder = os.path.join(BASE_DIR, 'benchmark', 'CRZ_json', ty)
     # for filedir in glob.iglob(os.path.join(sfolder, '*.json')):
     #     GA(filedir)
     filedir = [fdir for fdir in glob.iglob(os.path.join(sfolder, '*.json'))]

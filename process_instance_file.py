@@ -9,19 +9,20 @@ import matplotlib.pyplot as plt
 import random
 from sklearn.datasets.samples_generator import make_blobs
 import math
+# from CRZ import ty
 from src.utils import makeDirsForFile
 
 # folder = os.path.join(BASE_DIR, 'results', 'CRZ', 'p100g200', 'Z')
 # folder = os.path.join(BASE_DIR, 'results', 'CRZ_split', '2', 'C')
 # sfolder = os.path.join(BASE_DIR, 'benchmark', 'CRZ_split', 'Zones2')
 # folder = os.path.join(BASE_DIR, 'benchmark', 'CRZ', 'Zones')
-folder = os.path.join(BASE_DIR, 'benchmark', 'CRZ')
+# folder = os.path.join(BASE_DIR, 'benchmark', 'CRZ', 'd2')
 # folder = os.path.join(BASE_DIR, 'benchmark', 'CRZ', 'Random')
 # sfolder = os.path.join(BASE_DIR, 'benchmark', 'CRZ-1_demand', 'Zones2')
 # print(folder)
 
-sfolder = os.path.join(folder, 'fig')
-os.makedirs(sfolder, exist_ok=True)
+# sfolder = os.path.join(folder, 'fig')
+# os.makedirs(sfolder, exist_ok=True)
 
 # file = 'Solomon.py'
 # new_dir = os.path.join(BASE_DIR, 'src')
@@ -89,23 +90,6 @@ def check_zones():
             elif 100 < np.sqrt(float(rows[i][1]) ** 2 + float(rows[i][2]) ** 2) <= 250:
                 zone2 += 1
             elif 250 < np.sqrt(float(rows[i][1]) ** 2 + float(rows[i][2]) ** 2) <= 500:
-                zone3 += 1
-        print(zone1, zone2, zone3)
-
-
-def check_zones_csv():
-    for filedir in glob.iglob(os.path.join(folder, '*.csv')):
-        df = pd.read_csv(filedir)
-        zone1 = 0
-        zone2 = 0
-        zone3 = 0
-        # for i in range(1200):
-        for i in range(200):
-            if np.sqrt((df.loc[i, 'x'] - 500) ** 2 + (df.loc[i, 'y'] - 500) ** 2) < 100:
-                zone1 += 1
-            elif 100 <= np.sqrt((df.loc[i, 'x'] - 500) ** 2 + (df.loc[i, 'y'] - 500) ** 2) < 300:
-                zone2 += 1
-            elif 300 <= np.sqrt((df.loc[i, 'x'] - 500) ** 2 + (df.loc[i, 'y'] - 500) ** 2) <= 500:
                 zone3 += 1
         print(zone1, zone2, zone3)
 
@@ -682,23 +666,6 @@ def rename_first_col_name():
         df.to_csv(path_out, index=False)
 
 
-def zones2():
-    folder2 = os.path.join(BASE_DIR, 'benchmark', 'CRZ', 'Zones2')
-    # os.makedirs(folder2)
-    for filedir in glob.iglob(os.path.join(folder, '*.csv')):
-        name = os.path.splitext(os.path.basename(filedir))[0]
-        df = pd.read_csv(filedir)
-        for i in range(0, 2000, 2):
-            pickup, dropoff = df.iloc[i].copy(), df.iloc[i+1].copy()
-            df.iloc[i], df.iloc[i+1] = dropoff, pickup
-        # df.set_index('ID', inplace=True)
-        # df.reset_index(drop=True, inplace=True)
-        # df.columns = ['ID','x', 'y', 'demand']
-        df.ID = [j for j in range(2000)]
-        path_out = os.path.join(folder2, name + '.csv')
-        df.to_csv(path_out, index=False)
-
-
 def gen_rand(no):
     for ite in range(no):
         points = []
@@ -724,6 +691,24 @@ def gen_rand(no):
         fig.savefig(sfolder + '/' + name + '.png')
 
 
+def check_zones_csv():
+    for filedir in glob.iglob(os.path.join(folder, '*.csv')):
+        instName = os.path.splitext(os.path.basename(filedir))[0]
+        df = pd.read_csv(filedir)
+        zone1 = 0
+        zone2 = 0
+        zone3 = 0
+        # for i in range(1200):
+        for i in range(200):
+            if np.sqrt((df.loc[i, 'x'] - 500) ** 2 + (df.loc[i, 'y'] - 500) ** 2) <= 100:
+                zone1 += 1
+            elif 100 < np.sqrt((df.loc[i, 'x'] - 500) ** 2 + (df.loc[i, 'y'] - 500) ** 2) < 300:
+                zone2 += 1
+            elif 300 <= np.sqrt((df.loc[i, 'x'] - 500) ** 2 + (df.loc[i, 'y'] - 500) ** 2) <= 500:
+                zone3 += 1
+        print(instName, zone1, zone2, zone3)
+
+
 def gen_demand_specified_rand(no, d_no):
     for ite in range(no):
         points = []
@@ -747,10 +732,15 @@ def gen_demand_specified_rand(no, d_no):
             for _ in range(25): # 200
                 demand.append(random.choice([1, 2, 4]))
             demand.extend([3]*75)
-        else:
+        elif d_no == 4:
             for _ in range(25): # 200
                 demand.append(random.choice([1, 2, 3]))
             demand.extend([4]*75)
+        else:
+            demand.extend([1]*25)
+            demand.extend([2]*25)
+            demand.extend([3]*25)
+            demand.extend([4]*25)
         random.shuffle(demand)
         ind = 1
         while ind <= len(demand):
@@ -765,16 +755,22 @@ def gen_demand_specified_rand(no, d_no):
             name = f'100req-dmd3-R{ite}'
         elif d_no == 4:
             name = f'100req-dmd4-R{ite}'
+        elif d_no == 0:
+            name = f'100req-dmdA-R{ite}'
+        else:
+            name = f'100req-dmd-1-R{ite}'
         path_out = os.path.join(folder, name + '.csv')
         df = df.reset_index(drop=True)
         # df.columns = ['ID','x', 'y', 'demand']
         df.to_csv(path_out, index=True)
         colors = np.where(df.index.values % 2 == 0, 'r', 'g')
-        fig = df.plot.scatter(x='x', y='y', s=1, c=colors, figsize=(8, 8)).get_figure()
-        fig.set_xlim((0, 1000))
-        fig.set_ylim((0, 1000))
+        ax = df.plot.scatter(x='x', y='y', s=1, c=colors, figsize=(6, 6))
+        ax.set_xlim((0, 1000))
+        ax.set_ylim((0, 1000))
+        fig = ax.get_figure()
         # fig.savefig(sfolder + '/Li_32.png')
-        fig.savefig(sfolder + '/' + name + '.png')
+        fig.savefig(folder + '/plot_' + name + '.png')
+        plt.close('all')
 
 
 
@@ -821,10 +817,15 @@ def gen_demand_specified_clusters(no, d_no):
             for _ in range(25): # 200
                 demand.append(random.choice([1, 2, 4]))
             demand.extend([3]*75)
-        else:
+        elif d_no == 4:
             for _ in range(25): # 200
                 demand.append(random.choice([1, 2, 3]))
             demand.extend([4]*75)
+        else:
+            demand.extend([1]*25)
+            demand.extend([2]*25)
+            demand.extend([3]*25)
+            demand.extend([4]*25)
         random.shuffle(demand)
         ind = 1
         while ind <= len(demand):
@@ -840,20 +841,30 @@ def gen_demand_specified_clusters(no, d_no):
             name = f'100req-dmd3-C{ite}'
         elif d_no == 4:
             name = f'100req-dmd4-C{ite}'
+        elif d_no == 0:
+            name = f'100req-dmdA-C{ite}'
+        else:
+            name = f'100req-dmd-1-C{ite}'
         path_out = os.path.join(folder, name + '.csv')
         df = df.reset_index(drop=True)
         # df.columns = ['ID','x', 'y', 'demand']
         df.to_csv(path_out, index=True)
         colors = np.where(df.index.values % 2 == 0, 'r', 'g')
-        fig = df.plot.scatter(x='x', y='y', s=1, c=colors, figsize=(8, 8)).get_figure()
-        fig.set_xlim((0, 1000))
-        fig.set_ylim((0, 1000))
+        ax = df.plot.scatter(x='x', y='y', s=1, c=colors, figsize=(6, 6))
+        ax.set_xlim((0, 1000))
+        ax.set_ylim((0, 1000))
+        fig = ax.get_figure()
         # fig.savefig(sfolder + '/Li_32.png')
-        fig.savefig(folder + '/' + name + '.png')
+        fig.savefig(folder + '/plot_' + name + '.png')
+        plt.close('all')
 
 
-def gen_demand_specified_zones(ite, d_no):
-    for i in range(ite):
+def gen_demand_specified_zones(no, d_no):
+    global folder
+    ty = 'd' + str(d_no)
+    folder = os.path.join(BASE_DIR, 'benchmark', 'CRZ', ty)
+    os.makedirs(folder, exist_ok=True)
+    for ite in range(no):
         center = [500, 500]
         zone1 = []
         zone2 = []
@@ -863,44 +874,57 @@ def gen_demand_specified_zones(ite, d_no):
         # 100-300: 30
         # 300-500: 50
         for _ in range(40):
-            deviationFromPoint = random.uniform(0, 100)
-            alpha = 2 * math.pi * random.random()
-            r = deviationFromPoint * np.sqrt(random.random())
-            x = int(deviationFromPoint * math.cos(alpha) + center[0])
-            y = int(deviationFromPoint * math.sin(alpha) + center[1])
-            zone1.append([x, y])
+            deviationFromPoint = random.uniform(0, 99)
+            alpha = 2 * random.random()
+            cos = math.cos(alpha * math.pi)
+            sin = math.sin(alpha * math.pi)
+            x = deviationFromPoint * cos + center[0]
+            y = deviationFromPoint * sin + center[1]
+            dist = np.sqrt((int(x) - 500) ** 2 + (int(y) - 500) ** 2)
+            assert dist <= 100
+            zone1.append([int(x), int(y)])
         for _ in range(30):
-            deviationFromPoint = random.uniform(100, 300)
+            deviationFromPoint = random.uniform(101, 299)
             # deviationFromPoint = 300
-            alpha = 2 * math.pi * random.random()
-            r = deviationFromPoint * np.sqrt(random.random())
-            x = int(deviationFromPoint * math.cos(alpha) + center[0])
-            y = int(deviationFromPoint * math.sin(alpha) + center[1])
-            zone2.append([x, y])
-            dist = np.sqrt((x - 500) ** 2 + (y - 500) ** 2)
+            alpha = 2 * random.random()
+            cos = math.cos(alpha * math.pi)
+            sin = math.sin(alpha * math.pi)
+            x = deviationFromPoint * cos + center[0]
+            y = deviationFromPoint * sin + center[1]
+            dist = np.sqrt((int(x) - 500) ** 2 + (int(y) - 500) ** 2)
+            # zone2.append([x, y])
+            # dist = np.sqrt((x - 500) ** 2 + (y - 500) ** 2)
             assert 100 < dist and dist <= 300
+            zone2.append([int(x), int(y)])
 
-            deviationFromPoint = random.uniform(0, 100)
-            alpha = 2 * math.pi * random.random()
-            r = deviationFromPoint * np.sqrt(random.random())
-            x = int(deviationFromPoint * math.cos(alpha) + center[0])
-            y = int(deviationFromPoint * math.sin(alpha) + center[1])
+            deviationFromPoint = random.uniform(0, 99)
+            alpha = 2 * random.random()
+            cos = math.cos(alpha * math.pi)
+            sin = math.sin(alpha * math.pi)
+            x = int(deviationFromPoint * cos + center[0])
+            y = int(deviationFromPoint * sin + center[1])
+            dist = np.sqrt((x - 500) ** 2 + (y - 500) ** 2)
+            assert dist <= 100
             zone2.append([x, y])
         for _ in range(50):
-            deviationFromPoint = random.uniform(300, 500)
-            alpha = 2 * math.pi * random.random()
-            r = deviationFromPoint * np.sqrt(random.random())
-            x = int(deviationFromPoint * math.cos(alpha) + center[0])
-            y = int(deviationFromPoint * math.sin(alpha) + center[1])
-            zone3.append([x, y])
+            deviationFromPoint = random.uniform(301, 499)
+            alpha = 2 * random.random()
+            cos = math.cos(alpha * math.pi)
+            sin = math.sin(alpha * math.pi)
+            x = int(deviationFromPoint * cos + center[0])
+            y = int(deviationFromPoint * sin + center[1])
             dist = np.sqrt((x - 500) ** 2 + (y - 500) ** 2)
             assert 300 < dist and dist <= 500
+            zone3.append([x, y])
 
-            deviationFromPoint = random.uniform(0, 100)
-            alpha = 2 * math.pi * random.random()
-            r = deviationFromPoint * np.sqrt(random.random())
-            x = int(deviationFromPoint * math.cos(alpha) + center[0])
-            y = int(deviationFromPoint * math.sin(alpha) + center[1])
+            deviationFromPoint = random.uniform(0, 99)
+            alpha = 2 * random.random()
+            cos = math.cos(alpha * math.pi)
+            sin = math.sin(alpha * math.pi)
+            x = int(deviationFromPoint * cos + center[0])
+            y = int(deviationFromPoint * sin + center[1])
+            dist = np.sqrt((x - 500) ** 2 + (y - 500) ** 2)
+            assert dist <= 100
             zone3.append([x, y])
         # print(len(zone1), len(zone2), len(zone3))
         zones = zone1 + zone2 + zone3
@@ -919,10 +943,20 @@ def gen_demand_specified_zones(ite, d_no):
             for _ in range(25): # 200
                 demand.append(random.choice([1, 2, 4]))
             demand.extend([3]*75)
-        else:
+        elif d_no == 4:
             for _ in range(25): # 200
                 demand.append(random.choice([1, 2, 3]))
             demand.extend([4]*75)
+        elif d_no == 0:
+            demand.extend([1]*25)
+            demand.extend([2]*25)
+            demand.extend([3]*25)
+            demand.extend([4]*25)
+        else:
+            for _ in range(5): # 200
+                demand.append(random.choice([3, 4]))
+            demand.extend([1]*75)
+            demand.extend([2]*20)
         random.shuffle(demand)
         ind = 1
         while ind <= len(demand):
@@ -938,11 +972,15 @@ def gen_demand_specified_zones(ite, d_no):
             name = f'100req-dmd3-Z{ite}'
         elif d_no == 4:
             name = f'100req-dmd4-Z{ite}'
+        elif d_no == 0:
+            name = f'100req-dmdA-Z{ite}'
+        else:
+            name = f'100req-dmd-1-Z{ite}'
         path_out = os.path.join(folder, name + '.csv')
         df = df.reset_index(drop=True)
         df.to_csv(path_out, index=True)
         colors = np.where(df.index.values % 2 == 0, 'r', 'g')
-        ax = df.plot.scatter(x='x', y='y', s=1, c=colors, figsize=(8, 8))
+        ax = df.plot.scatter(x='x', y='y', s=1, c=colors, figsize=(6, 6))
         ax.set_xlim((0, 1000))
         ax.set_ylim((0, 1000))
         circle1 = plt.Circle((500, 500), radius=100, color='y', fill=False)
@@ -953,7 +991,40 @@ def gen_demand_specified_zones(ite, d_no):
         ax.add_artist(circle3)
         fig = ax.get_figure()
         # fig.savefig(sfolder + '/Li_32.png')
-        fig.savefig(folder + '/' + name + '_plot.png')
+        fig.savefig(folder + '/plot_' + name + '.png')
+        plt.close('all')
+
+
+def zones2():
+    # folder = os.path.join(BASE_DIR, 'benchmark', 'CRZ', 'd0')
+    # os.makedirs(folder2)
+    for filedir in glob.iglob(os.path.join(folder, '*.csv')):
+        name = os.path.splitext(os.path.basename(filedir))[0]
+        df = pd.read_csv(filedir)
+        for i in range(0, 200, 2):
+            # x_pickup, x_dropoff = df.iloc[i, 'x'].copy(), df.iloc[i+1, 'x'].copy()
+            # y_pickup, y_dropoff = df.iloc[i, 'y'].copy(), df.iloc[i+1, 'y'].copy()
+            df.ix[i, 'x'], df.ix[i+1, 'x'] = df.ix[i+1, 'x'], df.ix[i, 'x']
+            df.ix[i, 'y'], df.ix[i+1, 'y'] = df.ix[i+1, 'y'], df.ix[i, 'y']
+        # df.set_index('ID', inplace=True)
+        # df.reset_index(drop=True, inplace=True)
+        # df.columns = ['ID','x', 'y', 'demand']
+        # df.ID = [j for j in range(200)]
+        path_out = os.path.join(folder, name + '_i.csv')
+        df.to_csv(path_out, index=False)
+        colors = np.where(df.index.values % 2 == 0, 'r', 'g')
+        ax = df.plot.scatter(x='x', y='y', s=1, c=colors, figsize=(6, 6))
+        ax.set_xlim((0, 1000))
+        ax.set_ylim((0, 1000))
+        circle1 = plt.Circle((500, 500), radius=100, color='y', fill=False)
+        circle2 = plt.Circle((500, 500), radius=300, color='y', fill=False)
+        circle3 = plt.Circle((500, 500), radius=500, color='y', fill=False)
+        ax.add_artist(circle1)
+        ax.add_artist(circle2)
+        ax.add_artist(circle3)
+        fig = ax.get_figure()
+        fig.savefig(folder + '/plot_' + name + '_i.png')
+        plt.close('all')
 
 
 # format_instance_0()
@@ -973,10 +1044,12 @@ def gen_demand_specified_zones(ite, d_no):
 # line_connect_pickup_dropoff()
 # plot_from_csv()
 # gen_rand(4)
-# gen_demand_specified_clusters(4, 2)
-# gen_demand_specified_rand(4)
-# gen_demand_specified_zones(1, 1)
+
+# gen_demand_specified_zones(5, 2)
 # rename_first_col_name()
 # zones2()
+# gen_demand_specified_clusters(5, 2)
+# gen_demand_specified_rand(5, 2)
+# rename_first_col_name()
 # csv_split_demands()
-check_zones_csv()
+# check_zones_csv()

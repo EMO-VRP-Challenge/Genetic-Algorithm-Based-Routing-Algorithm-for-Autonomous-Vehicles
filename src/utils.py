@@ -12,6 +12,8 @@ import pandas as pd
 # import matplotlib.cm as cm
 # import numpy as np
 from itertools import cycle
+
+import CRZ
 from . import BASE_DIR
 import numpy as np
 from timeit import default_timer as timer
@@ -56,7 +58,7 @@ def exist(pathname, overwrite=False, displayInfo=True):
         return False
 
 
-def text_to_json(customize='0'):
+def text_to_json(filedir, customize='2'):
     # def __distance(customer1, customer2):
     #     return ((customer1['coordinates']['x'] - customer2['coordinates']['x'])**2 +
     #             (customer1['coordinates']['y'] - customer2['coordinates']['y'])**2)**0.5
@@ -73,111 +75,40 @@ def text_to_json(customize='0'):
     else:
         # textDataDir = os.path.join(BASE_DIR, 'benchmark', 'CRZ_split', 'Cluster') # , 'Cluster'
         # textDataDir = os.path.join(BASE_DIR, 'benchmark', 'CRZ_split', 'Random')
-        textDataDir = os.path.join(BASE_DIR, 'benchmark', 'CRZ')
+        # textDataDir = os.path.join(BASE_DIR, 'benchmark', 'CRZ', CRZ.ty)
         # jsonDataDir = os.path.join(BASE_DIR, 'benchmark', 'CRZ_split_json', 'C')
         # jsonDataDir = os.path.join(BASE_DIR, 'benchmark', 'CRZ_split_json', 'R')
-        jsonDataDir = os.path.join(BASE_DIR, 'benchmark', 'CRZ_json')
+        jsonDataDir = os.path.join(BASE_DIR, 'benchmark', 'CRZ_json', CRZ.ty)
         os.makedirs(jsonDataDir, exist_ok=True)
 
 
-    for filedir in glob.iglob(os.path.join(textDataDir, '*.csv')):
-        start_time = timer()
-        name = os.path.splitext(os.path.basename(filedir))[0] + '.json'
-        # print(name)
-        df = pd.read_csv(filedir)
-        dist_list = []
-        for i in range(df.shape[0]): # df.shape[0]
-            sub_dist_list = []
-            for j in range(df.shape[0]):
-                dist = np.sqrt(np.square(df.iloc[i][1] - df.iloc[j][1]) + np.square(df.iloc[i][2] - df.iloc[j][2]))
-                sub_dist_list.append(dist)
-            dist_list.append(sub_dist_list)
-            print(str(i) + '---' + name)
-        # matrix = {'distance_matrix' : dist_list}
+    # for filedir in glob.iglob(os.path.join(textDataDir, '*.csv')):
+    start_time = timer()
+    name = os.path.splitext(os.path.basename(filedir))[0] + '.json'
+    # print(name)
+    df = pd.read_csv(filedir)
+    dist_list = []
+    for i in range(df.shape[0]): # df.shape[0]
+        sub_dist_list = []
+        for j in range(df.shape[0]):
+            dist = np.sqrt(np.square(df.iloc[i][1] - df.iloc[j][1]) + np.square(df.iloc[i][2] - df.iloc[j][2]))
+            sub_dist_list.append(dist)
+        dist_list.append(sub_dist_list)
+        print(str(i) + '---' + name)
+    reader = csv.DictReader(open(filedir))
+    data = {}
+    for row in reader:
+        key = row.pop('ID')
+        data[key] = row
 
-        # with open(filedir) as f:
-        #     lines = f.readlines()
+    data['distance_matrix'] = dist_list
 
-        # with open(filedir) as f:
-            # lines = csv.reader(filedir)
-            # for row in csv.DictReader(f):
-            #     data.append(row)
-        reader = csv.DictReader(open(filedir))
-        data = {}
-        for row in reader:
-            key = row.pop('ID')
-            data[key] = row
+    jsonPath = os.path.join(jsonDataDir, name)
+    with open(jsonPath, 'w') as f:
+        json.dump(data, f, sort_keys=True, indent=4, separators=(',', ': '))
+    computing_time = (timer() - start_time)/60
+    print('Computing Time: %s min' % computing_time)
 
-        data['distance_matrix'] = dist_list
-            # lines = f.readlines()
-        # rows = []
-        # for line in lines:
-        #     rows.append(str(line))
-        #     # rows.append(line.split(' '))
-        # dist_list = []
-        # for i in range(1,2001):
-        #     sub_dist_list = []
-        #     for j in range(1,2001):
-        #         sub_dist_list.append(((int(rows[i][1]) - int(rows[j][1]))**2 + (int(rows[i][2]) - int(rows[j][2]))**2)**0.5)
-        #         # sub_dist_list.append(((int(lines[i][1]) - int(lines[j][1]))**2 + (int(lines[i][2]) - int(lines[j][2]))**2)**0.5)
-        #     dist_list.append(sub_dist_list)
-        # data.append(OrderedDict([('distance_matrix', dist_list)]))
-        # 'distance_matrix'+ dist_list
-        jsonPath = os.path.join(jsonDataDir, name)
-        # os.makedirs(jsonPath, exist_ok=True)
-        # if not os.path.exists(jsonPath):
-        #     makeDirsForFile(jsonPath)
-        with open(jsonPath, 'w') as f:
-            json.dump(data, f, sort_keys=True, indent=4, separators=(',', ': '))
-        computing_time = (timer() - start_time)/60
-        print('Computing Time: %s min' % computing_time)
-
-        # with open(jsonPath, 'a') as file:
-        #     x = json.dumps(matrix, indent=4)
-        #     file.write(x)
-
-
-
-    # for text_file in map(lambda textFilename: os.path.join(textDataDir, textFilename), fnmatch.filter(os.listdir(textDataDir), '*.txt')):
-    #     jsonData = {}
-    #     # Count the number of lines in the file to customize the number of customers
-    #     size = sum(1 for line in open(text_file))
-    #     with open(text_file) as f:
-    #         for lineNum, line in enumerate(f, start=1):
-    #             if lineNum in [2, 3, 4, 6, 7, 8, 9]:
-    #                 pass
-    #             elif lineNum == 1:
-    #                 # <Instance name>
-    #                 jsonData['instance_name'] = line.strip()
-    #
-    #             elif lineNum == 5:
-    #                 # <Maximum vehicle number>, <Vehicle capacity>
-    #                 values = line.strip().split()
-    #                 jsonData['max_vehicle_number'] = int(values[0])
-    #                 jsonData['vehicle_capacity'] = float(values[1])
-    #             else:
-    #                 # <Customer number>, <X coordinate>, <Y coordinate>, <Demand>, <Ready time>, <Due date>, <Service time>
-    #                 values = line.strip().split()
-    #                 jsonData['customer_%s' % values[0]] = {
-    #                     'coordinates': {
-    #                         'x': float(values[2]),
-    #                         'y': float(values[3]),
-    #                     },
-    #                     'demand': float(values[4]),
-    #                     # 'ready_time': float(values[4]),
-    #                     # 'due_time': float(values[5]),
-    #                     # 'service_time': float(values[6]),
-    #                 }
-    #     numOfCustomers = size - 9
-    #     customers = ['customer_%d' % x for x in range(0, numOfCustomers)]
-    #     jsonData['distance_matrix'] = [[__distance(jsonData[customer1], jsonData[customer2])
-    #                                     for customer1 in customers] for customer2 in customers]
-    #     jsonFilename = '%s.json' % jsonData['instance_name']
-    #     jsonPathname = os.path.join(jsonDataDir, jsonFilename)
-    #     print('Write to file: %s' % jsonPathname)
-    #     makeDirsForFile(pathname=jsonPathname)
-    #     with open(jsonPathname, 'w') as f:
-    #         json.dump(jsonData, f, sort_keys=True, indent=4, separators=(',', ': '))
 
 
 def result_analyze():
@@ -250,7 +181,8 @@ def visualization(nfolder, ty, algName, instanceName, instance, route, crossover
     # Plot the scatter plot of customers
     # plt.figure()
     ax = df.plot.scatter(x='x_pos', y='y_pos', color='red', s=1, figsize=(10, 10))
-
+    ax.set_xlim((0, 1000))
+    ax.set_ylim((0, 1000))
     # Label the axis
     ax.set_xlabel('X')
     ax.set_ylabel('Y')
@@ -294,6 +226,13 @@ def visualization(nfolder, ty, algName, instanceName, instance, route, crossover
             # Annotate the customer numbers
             # ax.text(i[0], j[0], str(customer))
             ax.text(x_list[1], y_list[1], str(next_customer), fontsize=8)
+    if 'Z' in instanceName:
+        circle1 = plt.Circle((500, 500), radius=100, color='grey', fill=False, linewidth=2)
+        circle2 = plt.Circle((500, 500), radius=300, color='grey', fill=False, linewidth=2)
+        circle3 = plt.Circle((500, 500), radius=500, color='grey', fill=False, linewidth=2)
+        ax.add_artist(circle1)
+        ax.add_artist(circle2)
+        ax.add_artist(circle3)
 
     # Save to folder
     currentTime = time.strftime("_%m-%d_%H-%M-%S")
@@ -308,10 +247,11 @@ def visualization(nfolder, ty, algName, instanceName, instance, route, crossover
     file_name = parameters + '.png'
     file_location = os.path.join(plotDataDir, instanceName+file_name)
     makeDirsForFile(pathname=file_location)
-    if exist(pathname=file_location, overwrite=False):
-        parameters = '_%s_indS%s_popS%s_nG%s_1' % (algName, indSize, popSize, NGen)
-        file_name = parameters + '.png'
-        file_location = os.path.join(plotDataDir, instanceName+file_name)
-    plt.savefig(file_location)
+    # if exist(pathname=file_location, overwrite=False):
+    #     parameters = '_%s_indS%s_popS%s_nG%s_1' % (algName, indSize, popSize, NGen)
+    #     file_name = parameters + '.png'
+    #     file_location = os.path.join(plotDataDir, instanceName+file_name)
+    fig = ax.get_figure()
+    fig.savefig(file_location)
     plt.close('all')
 
